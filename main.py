@@ -112,6 +112,14 @@ class GameView(arcade.View):
         start.bottom = self.current_y - 1000
         self.reset_layer.append(start)
 
+    def add_score(self):
+        with open("scores.txt") as f:
+            scores = f.read()
+            scores += f"{self.score}\n"
+
+        with open("scores.txt", "w") as f:
+            f.write(scores)
+
     def on_key_press(self, key, modifiers):
         t = time.time()
         if not self.timeout or t - self.timeout_start >= TIMEOUT_CONSTANT:
@@ -179,6 +187,7 @@ class GameView(arcade.View):
             time.time() - self.timer_starting_time >= TOTAL_GAME_TIME
             and self.timer_started
         ):
+            self.add_score()
             window = self.window
             # display game over (click to play again)
             level_finished = Finished(self, arcade.color.WHITE, self.score)
@@ -203,9 +212,18 @@ class Finished(arcade.View):
             fill_colour, transparency=PAUSE_SCREEN_TRANSPARENCY
         )
 
+    def get_scores_sorted(self):
+        f = open("scores.txt")
+        scores = f.read().split()
+        f.close()
+        sorted_scores = [str(j) for j in sorted([int(s) for s in scores])]
+        return sorted_scores[:3]
+
     def on_draw(self):
         self.clear()
         self.game_view.on_draw()
+
+        scores = self.get_scores_sorted()
 
         arcade.draw_lrtb_rectangle_filled(
             left=0,
@@ -225,9 +243,18 @@ class Finished(arcade.View):
         )
 
         arcade.draw_text(
-            "Click to play again",
+            f"Top 3 scores:{', '.join(scores)}",
             self.window.width / 2,
             self.window.height / 2 - TEXT_OFFSET,
+            arcade.color.BLACK,
+            font_size=20,
+            anchor_x="center",
+        )
+
+        arcade.draw_text(
+            "Click to play again",
+            self.window.width / 2,
+            self.window.height / 2 - 2 * TEXT_OFFSET,
             arcade.color.BLACK,
             font_size=20,
             anchor_x="center",
