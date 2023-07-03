@@ -14,7 +14,7 @@ TOTAL_GAME_TIME = 20
 PAUSE_SCREEN_TRANSPARENCY = 150
 TEXT_OFFSET = 50
 TITLE = "Funky piano game"
-PATH = dir_path = base_path = os.path.abspath(".") + "\\scores.txt"
+PATH  = os.path.abspath(".") + "\\scores.txt"
 
 
 class GameView(arcade.View):
