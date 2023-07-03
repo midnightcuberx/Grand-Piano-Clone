@@ -91,8 +91,13 @@ class GameView(arcade.View):
             12,
         )
 
-    def process_keychange(self):
-        pass
+    def update_tiles(self):
+        if not self.timer_started:
+            self.timer_started = True
+            self.timer_starting_time = time.time()
+        self.tiles_list.pop(0)
+        self.score += 1
+        self.add_new_tile()
 
     def add_new_tile(self):
         self.keys_pressed_since_reset += 1
@@ -112,48 +117,33 @@ class GameView(arcade.View):
         start.bottom = self.current_y - 1000
         self.reset_layer.append(start)
 
-    def add_score(self):
-        with open("scores.txt") as f:
-            scores = f.read()
-            scores += f"{self.score}\n"
-
-        with open("scores.txt", "w") as f:
-            f.write(scores)
+    def update_high_score(self):
+        f = open("scores.txt")
+        high_score = f.read()
+        f.close()
+        if high_score == "":
+            f = open("scores.txt", "w")
+            f.write(str(self.score))
+            f.close()
+        elif self.score > int(high_score):
+            f = open("scores.txt", "w")
+            f.write(str(self.score))
+            f.close()
 
     def on_key_press(self, key, modifiers):
         t = time.time()
         if not self.timeout or t - self.timeout_start >= TIMEOUT_CONSTANT:
             if key == arcade.key.KEY_1 and self.tiles_list[0] == 1:
-                if not self.timer_started:
-                    self.timer_started = True
-                    self.timer_starting_time = time.time()
-                self.tiles_list.pop(0)
-                self.score += 1
-                self.add_new_tile()
+                self.update_tiles()
                 print(1)
             elif key == arcade.key.KEY_2 and self.tiles_list[0] == 2:
-                if not self.timer_started:
-                    self.timer_started = True
-                    self.timer_starting_time = time.time()
-                self.tiles_list.pop(0)
-                self.score += 1
-                self.add_new_tile()
+                self.update_tiles()
                 print(2)
             elif key == arcade.key.KEY_3 and self.tiles_list[0] == 3:
-                if not self.timer_started:
-                    self.timer_started = True
-                    self.timer_starting_time = time.time()
-                self.tiles_list.pop(0)
-                self.score += 1
-                self.add_new_tile()
+                self.update_tiles()
                 print(3)
             elif key == arcade.key.KEY_4 and self.tiles_list[0] == 4:
-                if not self.timer_started:
-                    self.timer_started = True
-                    self.timer_starting_time = time.time()
-                self.tiles_list.pop(0)
-                self.score += 1
-                self.add_new_tile()
+                self.update_tiles()
                 print(4)
             else:
                 if self.keys_pressed_since_reset != 0:
@@ -161,18 +151,10 @@ class GameView(arcade.View):
                     self.timeout_start = time.time()
                     print("Timeout")
 
-            # self.process_keychange()
         else:
             print(time.time() - self.timeout_start)
 
-    def on_key_release(self, key, modifiers):
-        # self.process_keychange()
-        pass
-
     def adjust_camera(self):
-        """Centres camera to sprite"""
-
-        # Sets the co-ordinates for the camera
         screen_center_x = 0
         screen_center_y = self.current_y - 1000
 
@@ -187,9 +169,9 @@ class GameView(arcade.View):
             time.time() - self.timer_starting_time >= TOTAL_GAME_TIME
             and self.timer_started
         ):
-            self.add_score()
+            self.update_high_score()
             window = self.window
-            # display game over (click to play again)
+
             level_finished = Finished(self, arcade.color.WHITE, self.score)
             window.show_view(level_finished)
 
@@ -212,18 +194,17 @@ class Finished(arcade.View):
             fill_colour, transparency=PAUSE_SCREEN_TRANSPARENCY
         )
 
-    def get_scores_sorted(self):
+    def get_highscore(self):
         f = open("scores.txt")
-        scores = f.read().split()
+        score = f.read()
         f.close()
-        sorted_scores = [str(j) for j in sorted([int(s) for s in scores])]
-        return sorted_scores[:3]
+        return score
 
     def on_draw(self):
         self.clear()
         self.game_view.on_draw()
 
-        scores = self.get_scores_sorted()
+        high_score = self.get_highscore()
 
         arcade.draw_lrtb_rectangle_filled(
             left=0,
@@ -243,7 +224,7 @@ class Finished(arcade.View):
         )
 
         arcade.draw_text(
-            f"Top 3 scores:{', '.join(scores)}",
+            f"High Score: {high_score}",
             self.window.width / 2,
             self.window.height / 2 - TEXT_OFFSET,
             arcade.color.BLACK,
