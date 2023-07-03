@@ -2,10 +2,11 @@ import arcade
 import random
 import time
 
-WIDTH = 400
-HEIGHT = 1000
-TILE_WIDTH = 100
-TILE_HEIGHT = 250
+RATIO = 0.75
+WIDTH = int(400 * RATIO)
+HEIGHT = int(1000 * RATIO)
+TILE_WIDTH = int(WIDTH / 4)
+TILE_HEIGHT = int(HEIGHT / 4)
 TIMEOUT_CONSTANT = 2
 TOTAL_GAME_TIME = 20
 PAUSE_SCREEN_TRANSPARENCY = 150
@@ -54,20 +55,20 @@ class GameView(arcade.View):
         self.score_list = arcade.SpriteList()
 
         score_box = arcade.Sprite("blue1.jpg")
-        score_box.right = 400
-        score_box.top = 1000
+        score_box.right = WIDTH
+        score_box.top = HEIGHT
         self.score_list.append(score_box)
 
         for i in range(4):
             if i == 0:
-                tile = arcade.Sprite("black2.jpg")
+                tile = arcade.Sprite("black2.jpg", scale=RATIO)
             else:
-                tile = arcade.Sprite("black1.jpg")
+                tile = arcade.Sprite("black1.jpg", scale=RATIO)
             slot_num = random.randint(0, 3)
             self.tiles_list.append(slot_num + 1)
-            tile.left = slot_num * 100
+            tile.left = slot_num * TILE_WIDTH
             tile.bottom = self.current_y
-            self.current_y += 250
+            self.current_y += TILE_HEIGHT
             self.tiles.append(tile)
 
     def on_show_view(self):
@@ -87,8 +88,8 @@ class GameView(arcade.View):
         score_text = str(self.score)
         arcade.draw_text(
             score_text,
-            365,
-            970,
+            WIDTH - 35,
+            HEIGHT - 30,
             arcade.csscolor.WHITE,
             12,
         )
@@ -103,26 +104,26 @@ class GameView(arcade.View):
 
     def add_new_tile(self):
         self.keys_pressed_since_reset += 1
-        tile = arcade.Sprite("black1.jpg")
+        tile = arcade.Sprite("black1.jpg", scale=RATIO)
         slot_num = random.randint(0, 3)
         self.tiles_list.append(slot_num + 1)
-        tile.left = slot_num * 100
+        tile.left = slot_num * TILE_WIDTH
         tile.bottom = self.current_y
-        self.current_y += 250
+        self.current_y += TILE_HEIGHT
         self.tiles.append(tile)
 
     def restart(self):
         self.keys_pressed_since_reset = 0
         tile_num = self.tiles_list[0]
-        start = arcade.Sprite("black2.jpg")
-        start.left = tile_num * 100 - 100
-        start.bottom = self.current_y - 1000
+        start = arcade.Sprite("black2.jpg", scale=RATIO)
+        start.left = (tile_num - 1) * TILE_WIDTH
+        start.bottom = self.current_y - HEIGHT
         self.reset_layer.append(start)
 
     def add_reset_tile(self, name, tile_num):
-        tile = arcade.Sprite(name)
-        tile.left = tile_num * 100
-        tile.bottom = self.current_y - 1000
+        tile = arcade.Sprite(name, scale=RATIO)
+        tile.left = tile_num * TILE_WIDTH
+        tile.bottom = self.current_y - HEIGHT
         self.reset_layer.append(tile)
 
     def update_high_score(self):
@@ -176,7 +177,7 @@ class GameView(arcade.View):
 
     def adjust_camera(self):
         screen_center_x = 0
-        screen_center_y = self.current_y - 1000
+        screen_center_y = self.current_y - HEIGHT
 
         player_centered = screen_center_x, screen_center_y
         self.cam.move_to(player_centered, 0.2)
@@ -199,9 +200,11 @@ class GameView(arcade.View):
             time.time() - self.timeout_start >= TIMEOUT_CONSTANT
             and self.timeout
         ):
+            # print("test")
             self.timeout = False
             self.reset_layer.pop()
             self.restart()
+            # self.add_reset_tile("white.png", self.red_tile_num)
 
 
 class Finished(arcade.View):
