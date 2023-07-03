@@ -9,7 +9,7 @@ TILE_HEIGHT = 250
 TIMEOUT_CONSTANT = 2
 TOTAL_GAME_TIME = 20
 PAUSE_SCREEN_TRANSPARENCY = 150
-TEXT_OFFSET = 75
+TEXT_OFFSET = 50
 TITLE = "Funky piano game"
 
 
@@ -39,6 +39,8 @@ class GameView(arcade.View):
 
         self.timer_started = False
         self.timer_starting_time = 0
+
+        self.red_tile_num = None
 
         arcade.set_background_color(arcade.csscolor.WHITE)
 
@@ -117,6 +119,12 @@ class GameView(arcade.View):
         start.bottom = self.current_y - 1000
         self.reset_layer.append(start)
 
+    def add_reset_tile(self, name, tile_num):
+        tile = arcade.Sprite(name)
+        tile.left = tile_num * 100
+        tile.bottom = self.current_y - 1000
+        self.reset_layer.append(tile)
+
     def update_high_score(self):
         f = open("scores.txt")
         high_score = f.read()
@@ -147,9 +155,21 @@ class GameView(arcade.View):
                 print(4)
             else:
                 if self.keys_pressed_since_reset != 0:
+                    # add red here
                     self.timeout = True
                     self.timeout_start = time.time()
                     print("Timeout")
+                    if key == arcade.key.KEY_1:
+                        tile_num = 0
+                    elif key == arcade.key.KEY_2:
+                        tile_num = 1
+                    elif key == arcade.key.KEY_3:
+                        tile_num = 2
+                    else:
+                        tile_num = 3
+
+                    self.red_tile_num = tile_num
+                    self.add_reset_tile("red1.png", tile_num)
 
         else:
             print(time.time() - self.timeout_start)
@@ -179,8 +199,8 @@ class GameView(arcade.View):
             time.time() - self.timeout_start >= TIMEOUT_CONSTANT
             and self.timeout
         ):
-            print("test")
             self.timeout = False
+            self.reset_layer.pop()
             self.restart()
 
 
@@ -243,7 +263,6 @@ class Finished(arcade.View):
 
     def on_mouse_press(self, _x, _y, _button, _modifiers):
         view = GameView()
-        # view.setup()
         self.window.show_view(view)
 
 
