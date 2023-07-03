@@ -1,6 +1,8 @@
 import arcade
 import random
 import time
+import os
+import sys
 
 RATIO = 0.75
 WIDTH = int(400 * RATIO)
@@ -12,6 +14,7 @@ TOTAL_GAME_TIME = 20
 PAUSE_SCREEN_TRANSPARENCY = 150
 TEXT_OFFSET = 50
 TITLE = "Funky piano game"
+PATH = dir_path = base_path = os.path.abspath(".") + "\\scores.txt"
 
 
 class GameView(arcade.View):
@@ -127,15 +130,15 @@ class GameView(arcade.View):
         self.reset_layer.append(tile)
 
     def update_high_score(self):
-        f = open("scores.txt")
+        f = open(PATH)
         high_score = f.read()
         f.close()
         if high_score == "":
-            f = open("scores.txt", "w")
+            f = open(PATH, "w")
             f.write(str(self.score))
             f.close()
         elif self.score > int(high_score):
-            f = open("scores.txt", "w")
+            f = open(PATH, "w")
             f.write(str(self.score))
             f.close()
 
@@ -218,7 +221,7 @@ class Finished(arcade.View):
         )
 
     def get_highscore(self):
-        f = open("scores.txt")
+        f = open(PATH)
         score = f.read()
         f.close()
         return score
